@@ -344,6 +344,29 @@ body.dark [class*=tile-]{filter:brightness(.72) saturate(.9)}
 .cat.on .ic{background:#fff;color:var(--brand)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
+<style>
+/* ===== 响应式：电脑=网页演示，手机=全屏 App ===== */
+.mhint{
+  position:fixed;top:max(12px, env(safe-area-inset-top));left:50%;
+  transform:translate(-50%,-10px);z-index:80;display:none;
+  background:rgba(10,15,22,.68);color:#fff;font-size:12px;font-weight:700;
+  padding:7px 14px;border-radius:999px;letter-spacing:.5px;
+  backdrop-filter:blur(12px) saturate(160%);-webkit-backdrop-filter:blur(12px) saturate(160%);
+  border:1px solid rgba(255,255,255,.14);
+  opacity:0;transition:opacity .28s,transform .28s;pointer-events:none;white-space:nowrap;
+}
+.mhint.show{opacity:1;transform:translate(-50%,0)}
+.mhint b{color:#4FE3A0;font-weight:800}
+@media (max-width:500px){
+  html,body{height:100%;overscroll-behavior:none}
+  body{padding:0;margin:0;min-height:100dvh;overflow:hidden}
+  .topline,.tweak-fab,.tweaks,.island,.statusbar{display:none!important}
+  .stage{display:block;width:100%;height:100%;height:100dvh}
+  .phone{width:100%;height:100%;border-radius:0;box-shadow:none;margin:0}
+  .tabbar{bottom:max(12px, env(safe-area-inset-bottom))}
+  .mhint{display:block}
+}
+</style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute">
@@ -712,7 +735,7 @@ body.dark [class*=tile-]{filter:brightness(.72) saturate(.9)}
           <button class="mi"><span class="ic" style="background:var(--violet-soft);color:var(--violet)"><svg class="ico" viewBox="0 0 24 24"><use href="#i-lock"/></svg></span><span>隐私政策</span><svg class="ico chev" style="width:17px;height:17px" viewBox="0 0 24 24"><use href="#i-right"/></svg></button>
           <button class="mi"><span class="ic" style="background:var(--brand-soft);color:var(--brand)"><svg class="ico" viewBox="0 0 24 24"><use href="#i-box"/></svg></span><span>关于柚子校园</span><span class="n">v1.0.0</span><svg class="ico chev" style="width:17px;height:17px" viewBox="0 0 24 24"><use href="#i-right"/></svg></button>
         </div>
-        <button class="btn" style="margin:28px 18px 0;background:var(--card);color:var(--red);border:1px solid var(--line);box-shadow:var(--sh-sm)">退出登录</button>
+        <button class="btn" style="margin:28px 18px 0;width:auto;background:var(--card);color:var(--red);border:1px solid var(--line);box-shadow:var(--sh-sm)">退出登录</button>
         <div style="height:40px"></div>
       </div>
     </div>
@@ -771,6 +794,37 @@ document.querySelectorAll('[data-color]').forEach(function(b){
   });
 });
 setTimeout(function(){go('login')},1900);
+</script>
+<script>
+(function(){
+  var order=['splash','login','home','market','product','rental','rental-detail','publish','me','settings'];
+  var names={splash:'启动页',login:'登录',home:'首页',market:'二手集市',product:'商品详情',rental:'设备租赁','rental-detail':'租赁详情',publish:'发布闲置',me:'我的',settings:'设置'};
+  var cur=function(){var s=document.querySelector('.screen.on');return s?s.id.slice(2):'splash';};
+  var pill=document.createElement('div');pill.className='mhint';document.body.appendChild(pill);
+  var t;
+  function update(){
+    var id=cur(),i=order.indexOf(id);
+    if(i<0){i=0}
+    pill.innerHTML=(i+1)+'<b>/'+order.length+'</b> · '+names[id];
+    pill.classList.add('show');
+    clearTimeout(t);t=setTimeout(function(){pill.classList.remove('show')},2000);
+  }
+  function step(d){var i=order.indexOf(cur());if(i<0){i=0}var n=(i+d+order.length)%order.length;go(order[n]);}
+  var _go=window.go;window.go=function(id){_go(id);update();};
+  var x0=null,y0=null;
+  document.addEventListener('touchstart',function(e){
+    if(window.innerWidth>500)return;
+    if(e.target.closest&&e.target.closest('.hrow,.chips'))return;
+    x0=e.touches[0].clientX;y0=e.touches[0].clientY;
+  },{passive:true});
+  document.addEventListener('touchend',function(e){
+    if(x0==null)return;
+    var dx=e.changedTouches[0].clientX-x0,dy=e.changedTouches[0].clientY-y0;
+    if(Math.abs(dx)>46&&Math.abs(dx)>Math.abs(dy)*1.35){step(dx<0?1:-1)}
+    x0=null;
+  },{passive:true});
+  update();
+})();
 </script>
 </body>
 </html>
